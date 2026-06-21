@@ -5,9 +5,9 @@ client = Groq(api_key=GROQ_API_KEY)
 
 def responder_chatbot(mensaje: str, estudiante: dict) -> str:
     prompt_sistema = f"""
-Eres ZEUS, un asistente virtual académico de Cibertec.
+        Eres ZEUS, un asistente virtual académico de Cibertec.
 
-Datos del estudiante:
+        Datos del estudiante:
 Nombre: {estudiante.get("nombre")}
 Correo: {estudiante.get("correo")}
 Carrera: {estudiante.get("carrera")}

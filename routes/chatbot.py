@@ -16,3 +16,4 @@ def chatbot(request: ChatRequest):
     respuesta = responder_chatbot(request.mensaje, estudiante_demo)
 
     return ChatResponse(respuesta=respuesta)
+
