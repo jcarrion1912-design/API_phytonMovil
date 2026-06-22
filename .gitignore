@@ -12,7 +12,7 @@ __pycache__/
 *.log
 
 # vscode
-.vscode/
+.vscode/ 
 
 # archivos temporales
 *.tmp
