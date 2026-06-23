@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from models.modelos import RecursoRecomendado, RecursoRecomendadoCreate
-from services.firebase_service import db, now_iso, document_payload
+from services.firebase_service import db, now_iso, document_payload, query_where
 
 router = APIRouter(prefix="/api/v1/recursos", tags=["Recursos"])
 
@@ -15,8 +15,7 @@ def listar_recursos():
 @router.get("/solicitud/{idSolicitud}", response_model=list[RecursoRecomendado])
 def recursos_por_solicitud(idSolicitud: str):
     docs = (
-        db.collection("recursosRecomendados")
-        .where("idSolicitud", "==", idSolicitud)
+        query_where(db.collection("recursosRecomendados"), "idSolicitud", "==", idSolicitud)
         .stream()
     )
     return [RecursoRecomendado(**document_payload(doc)) for doc in docs]

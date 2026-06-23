@@ -7,6 +7,7 @@ from typing import Any
 
 import firebase_admin
 from firebase_admin import credentials, firestore
+from google.cloud.firestore_v1 import FieldFilter
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CREDENTIALS = PROJECT_ROOT / "serviceAccountKey.json"
@@ -56,3 +57,7 @@ def document_payload(document) -> dict[str, Any]:
 
 def query_payload(documents) -> list[dict[str, Any]]:
     return [document_payload(document) for document in documents]
+
+
+def query_where(collection_ref, field_path: str, op_string: str, value: Any):
+    return collection_ref.where(filter=FieldFilter(field_path, op_string, value))

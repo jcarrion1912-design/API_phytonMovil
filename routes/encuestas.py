@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from models.modelos import EncuestaCreate, EncuestaSatisfaccion
-from services.firebase_service import db, now_iso, document_payload
+from services.firebase_service import db, now_iso, document_payload, query_where
 
 router = APIRouter(prefix="/api/v1/encuestas", tags=["Encuestas"])
 
@@ -31,8 +31,39 @@ def obtener_encuesta(idEncuesta: str):
 @router.get("/estudiante/{idEstudiante}", response_model=list[EncuestaSatisfaccion])
 def encuestas_por_estudiante(idEstudiante: str):
     docs = (
-        db.collection("encuestasSatisfaccion")
-        .where("idEstudiante", "==", idEstudiante)
+        query_where(db.collection("encuestasSatisfaccion"), "idEstudiante", "==", idEstudiante)
         .stream()
     )
-    return [EncuestaSatisfaccion(**document_payload(doc)) for doc in docs]
+    encuestas = [EncuestaSatisfaccion(**document_payload(doc)) for doc in docs]
+    return sorted(encuestas, key=lambda encuesta: encuesta.fechaCreacion or "", reverse=True)
+
+
+@router.patch("/estudiante/{idEstudiante}", response_model=EncuestaSatisfaccion)
+def actualizar_encuesta_por_estudiante(idEstudiante: str, data: EncuestaCreate):
+    docs = (
+        query_where(db.collection("encuestasSatisfaccion"), "idEstudiante", "==", idEstudiante)
+        .stream()
+    )
+
+    doc_existente = next(docs, None)
+
+    payload = data.model_dump()
+    payload["idEstudiante"] = idEstudiante
+
+    if doc_existente is None:
+        ref = db.collection("encuestasSatisfaccion").document()
+        payload["idEncuesta"] = ref.id
+        payload["fechaCreacion"] = now_iso()
+        ref.set(payload)
+        return EncuestaSatisfaccion(**payload)
+
+    doc_ref = db.collection("encuestasSatisfaccion").document(doc_existente.id)
+    actualizacion = {
+        "idSolicitud": payload.get("idSolicitud", ""),
+        "calificacion": payload.get("calificacion", 0),
+        "comentario": payload.get("comentario", ""),
+    }
+    doc_ref.update(actualizacion)
+
+    actualizado = doc_ref.get()
+    return EncuestaSatisfaccion(**document_payload(actualizado))

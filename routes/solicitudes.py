@@ -6,7 +6,7 @@ from models.modelos import (
     SolicitudAsesoria,
     SolicitudAsesoriaCreate,
 )
-from services.firebase_service import db, now_iso, document_payload
+from services.firebase_service import db, now_iso, document_payload, query_where
 
 router = APIRouter(prefix="/api/v1/solicitudes", tags=["Solicitudes"])
 
@@ -28,8 +28,7 @@ def obtener_solicitud(idSolicitud: str):
 @router.get("/estudiante/{idEstudiante}", response_model=list[SolicitudAsesoria])
 def solicitudes_por_estudiante(idEstudiante: str):
     docs = (
-        db.collection("solicitudesAsesoria")
-        .where("idEstudiante", "==", idEstudiante)
+        query_where(db.collection("solicitudesAsesoria"), "idEstudiante", "==", idEstudiante)
         .stream()
     )
     return [SolicitudAsesoria(**document_payload(doc)) for doc in docs]

@@ -3,14 +3,13 @@ from groq import Groq
 
 from config import GROQ_API_KEY
 from models.modelos import ChatRequest
-from services.firebase_service import db, now_iso, normalize_firestore_document
+from services.firebase_service import db, now_iso, normalize_firestore_document, query_where
 
 client = Groq(api_key=GROQ_API_KEY)
 
 def obtener_historial_conversacion(id_conversacion: str, limite: int = 10):
     docs = (
-        db.collection("mensajes")
-        .where("idConversacion", "==", id_conversacion)
+        query_where(db.collection("mensajes"), "idConversacion", "==", id_conversacion)
         .stream()
     )
     mensajes = []

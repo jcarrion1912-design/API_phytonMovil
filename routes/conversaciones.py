@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from models.modelos import Conversacion, ConversacionCreate
-from services.firebase_service import db, now_iso, document_payload
+from services.firebase_service import db, now_iso, document_payload, query_where
 
 router = APIRouter(prefix="/api/v1/conversaciones", tags=["Conversaciones"])
 
@@ -17,11 +17,17 @@ def obtener_conversacion(idConversacion: str):
 @router.get("/estudiante/{idEstudiante}", response_model=list[Conversacion])
 def conversaciones_por_estudiante(idEstudiante: str):
     docs = (
-        db.collection("conversaciones")
-        .where("idEstudiante", "==", idEstudiante)
+        query_where(db.collection("conversaciones"), "idEstudiante", "==", idEstudiante)
         .stream()
     )
-    return [Conversacion(**document_payload(doc)) for doc in docs]
+    conversaciones = [Conversacion(**document_payload(doc)) for doc in docs]
+    return sorted(
+        conversaciones,
+        key=lambda conversacion: (
+            conversacion.fechaActualizacion or conversacion.fechaCreacion or ""
+        ),
+        reverse=True,
+    )
 
 
 @router.post("/", response_model=Conversacion, status_code=201)
