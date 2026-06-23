@@ -1,19 +1,14 @@
 from fastapi import APIRouter
-from models.chatbot_model import ChatRequest, ChatResponse
-from services.chatbot_service import responder_chatbot
 
-router = APIRouter(prefix="/chatbot", tags=["Chatbot"])
+from models.modelos import ChatResponse, ChatRequest
+from services.chatbot_service import responder_chatbot, guardar_mensaje
 
-@router.post("/", response_model=ChatResponse)
-def chatbot(request: ChatRequest):
-    estudiante_demo = {
-        "nombre": "Juan Pérez García",
-        "correo": "i20240@cibertec.edu.pe",
-        "carrera": "Ingeniería de Sistemas",
-        "ciclo": "4° Ciclo"
-    }
+router = APIRouter(tags=["Chatbot"])
 
-    respuesta = responder_chatbot(request.mensaje, estudiante_demo)
-
+@router.post("/api/v1/chat", response_model=ChatResponse)
+@router.post("/api/zeus/chat", response_model=ChatResponse, include_in_schema=False)
+def chat_con_zeus(data: ChatRequest):
+    guardar_mensaje(data.idConversacion, "estudiante", data.mensaje)
+    respuesta = responder_chatbot(data)
+    guardar_mensaje(data.idConversacion, "zeus", respuesta)
     return ChatResponse(respuesta=respuesta)
-
