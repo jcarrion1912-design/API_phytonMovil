@@ -71,6 +71,45 @@ class Estudiante(BaseModel):
     fechaActualizacion: str = ""
 
 
+class EstudianteAdmin(BaseModel):
+    idInstitucional: str = ""
+    correoInstitucional: str = ""
+    email: str = ""
+    nombre: str = ""
+    carrera: str = ""
+    ciclo: str = ""
+    estado: str = ""
+    fotoUrl: str = ""
+    telefono: str = ""
+    fechaCreacion: str = ""
+    fechaActualizacion: str = ""
+
+
+class EstudianteAdminCreate(BaseModel):
+    idInstitucional: str
+    correoInstitucional: str
+    contrasena: str = Field(min_length=6)
+    nombre: str
+    carrera: str = ""
+    ciclo: str = ""
+    email: str = ""
+    estado: str = "activo"
+    fotoUrl: str = ""
+    telefono: str = ""
+
+
+class EstudianteAdminUpdate(BaseModel):
+    correoInstitucional: Optional[str] = None
+    contrasena: Optional[str] = Field(default=None, min_length=6)
+    nombre: Optional[str] = None
+    carrera: Optional[str] = None
+    ciclo: Optional[str] = None
+    email: Optional[str] = None
+    estado: Optional[str] = None
+    fotoUrl: Optional[str] = None
+    telefono: Optional[str] = None
+
+
 class Mensaje(BaseModel):
     idMensaje: str = ""
     idConversacion: str = ""
@@ -141,6 +180,7 @@ class MensajeCreate(BaseModel):
 
 
 class AsesorCreate(BaseModel):
+    idAsesor: str
     nombre: str
     telefono: str
     especialidad: str
@@ -178,3 +218,46 @@ class RecursoRecomendadoCreate(BaseModel):
     url: str
     carrera: str
     etiquetaDuda: str
+
+
+class RecursoRecomendadoUpdate(BaseModel):
+    idSolicitud: Optional[str] = None
+    titulo: Optional[str] = None
+    tipo: Optional[str] = None
+    url: Optional[str] = None
+    carrera: Optional[str] = None
+    etiquetaDuda: Optional[str] = None
+
+
+class Admin(BaseModel):
+    uid: str = ""
+    nombre: str = ""
+    email: str = ""
+    activo: bool = True
+    fotoUrl: str = ""
+    fechaCreacion: str = ""
+    fechaActualizacion: str = ""
+    rol: str = "admin"
+
+
+class AdminSummary(BaseModel):
+    totalEstudiantes: int = 0
+    estudiantesActivos: int = 0
+    totalAsesores: int = 0
+    asesoresDisponibles: int = 0
+    solicitudesPendientes: int = 0
+    solicitudesEnAtencion: int = 0
+    solicitudesResueltas: int = 0
+    conversacionesActivas: int = 0
+    mensajesTotales: int = 0
+    encuestasTotales: int = 0
+    recursosRecomendados: int = 0
+
+
+class AuthMeResponse(BaseModel):
+    uid: str
+    email: str = ""
+    nombre: str = ""
+    activo: bool = True
+    fotoUrl: str = ""
+    rol: str = "admin"

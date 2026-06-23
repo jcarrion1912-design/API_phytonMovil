@@ -1,15 +1,22 @@
 from fastapi import APIRouter, HTTPException
 
 from models.modelos import Asesor, AsesorCreate, AsesorUpdate
-from services.firebase_service import db, now_iso, document_payload
+from services.firebase_service import db, now_iso, document_payload, normalize_firestore_document
 
 router = APIRouter(prefix="/api/v1/asesores", tags=["Asesores"])
+
+
+def _asesor_response(doc) -> Asesor:
+    data = normalize_firestore_document(doc)
+    data.pop("id", None)
+    data["idAsesor"] = doc.id
+    return Asesor(**data)
 
 
 @router.get("/", response_model=list[Asesor])
 def listar_asesores():
     docs = db.collection("asesores").stream()
-    return [Asesor(**document_payload(doc)) for doc in docs]
+    return [_asesor_response(doc) for doc in docs]
 
 
 @router.get("/{idAsesor}", response_model=Asesor)
@@ -17,7 +24,7 @@ def obtener_asesor(idAsesor: str):
     doc = db.collection("asesores").document(idAsesor).get()
     if not doc.exists:
         raise HTTPException(status_code=404, detail="Asesor no encontrado")
-    return Asesor(**document_payload(doc))
+    return _asesor_response(doc)
 
 
 @router.post("/", response_model=Asesor, status_code=201)
@@ -32,6 +39,7 @@ def crear_asesor(data: AsesorCreate):
         }
     )
     ref.set(payload)
+    payload["idAsesor"] = ref.id
     return Asesor(**payload)
 
 
@@ -46,4 +54,4 @@ def actualizar_asesor(idAsesor: str, data: AsesorUpdate):
     payload["fechaActualizacion"] = now_iso()
     doc_ref.update(payload)
     actualizado = doc_ref.get()
-    return Asesor(**document_payload(actualizado))
+    return _asesor_response(actualizado)
